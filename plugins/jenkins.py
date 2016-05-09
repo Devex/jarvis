@@ -66,7 +66,7 @@ class Jenkins():
         return response.text
 
 
-@respond_to('list', re.IGNORECASE)
+@respond_to('^list$', re.IGNORECASE)
 def list(message):
     J = Jenkins()
     reply = "I found {} jobs:\n".format(J.job_count)
