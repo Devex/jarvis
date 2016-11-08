@@ -39,7 +39,7 @@ class Jenkins():
     def _get_crumb(self):
         response = requests.get(self._build_crumbIssuer_url(), auth=HTTPBasicAuth(self.username, self.password))
         crumb_data = json.loads(response.text)
-        return crumb_data['crumb']
+        return crumb_data['crumbRequestField'], crumb_data['crumb']
 
     def _get_job_data(self, job_name):
         for job in self.data['jobs']:
@@ -60,7 +60,8 @@ class Jenkins():
         else:
             build_method=self._build_buildWithParams_url
         auth = HTTPBasicAuth(self.username, self.password)
-        headers = {'.crumb': self._get_crumb()} #, 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+        crumb_data = self._get_crumb()
+        headers = {crumb_data[0]: crumb_data[1]} #, 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         url = build_method(job_name)
         response = requests.post(url, auth=auth, headers=headers, data=job_params)
         return response.text
