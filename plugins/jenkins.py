@@ -4,6 +4,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import json
 import re
+import time
 
 
 class Jenkins():
@@ -54,6 +55,12 @@ class Jenkins():
         job = self._get_job_data(job_name)
         return "{}buildWithParameters".format(job['url'])
 
+    def _task_started(self, task_data):
+        if "executable" in task_data:
+            if task_data["executable"] is dict and "url" in task_data["executable"]:
+                return True
+        return False
+
     def build(self, job_name, job_params=None):
         if job_params is None or job_params == {}:
             build_method=self._build_build_url
@@ -64,7 +71,21 @@ class Jenkins():
         headers = {crumb_data[0]: crumb_data[1]} #, 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         url = build_method(job_name)
         response = requests.post(url, auth=auth, headers=headers, data=job_params)
-        return response.text
+        job_id = response.headers['Location'].split('/')[-2]
+        queue_url = self._build_api_url(response.headers['Location'])
+        response2 = requests.post(queue_url, auth=auth, headers=headers)
+        queued_task = json.loads(response2.text)
+        while not queued_task["buildable"]:
+            time.sleep(1)
+            response2 = requests.post(queue_url, auth=auth, headers=headers)
+            try:
+                queued_task = json.loads(response2.text)
+            except json.decoder.JSONDecodeError:
+                pass
+        while "pending" in queued_task and not queued_task["pending"]:
+            response2 = requests.post(queue_url, auth=auth, headers=headers)
+            queued_task = json.loads(response2.text)
+        return queued_task["executable"]["url"]
 
 
 @respond_to('^list$', re.IGNORECASE)
@@ -83,5 +104,29 @@ def build(message, job, args):
     reply = J.build(job, params)
     if reply == '':
         message.react('ok_hand')
+        message.reply(reply)
     else:
         message.reply("{}".format(reply))
+
+if __name__ == "__main__":
+    try:
+        input = raw_input
+    except NameError:
+        pass
+    J = Jenkins()
+    help_message="You can use help, list, build, or quit"
+    command=input("> ")
+    while command != "quit":
+        if command == "help":
+            print(help_message)
+        elif command == "list":
+            for job in J.job_list():
+                print(job)
+        elif command.startswith("build"):
+            command_parts = command.split()
+            job, args = command_parts[1], command_parts[2:]
+            params = {key: value for (key, value) in [param.split('=') for param in args]}
+            result = J.build(job, params)
+            print(result)
+        command=input("> ")
+    print("Quitting test mode")
