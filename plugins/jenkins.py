@@ -91,7 +91,7 @@ class Jenkins():
            "url" in queued_task["executable"]:
             return queued_task["executable"]["url"]
         else:
-            return "Task is still in queue"
+            return "Task was queued, waiting to start"
 
 
 @respond_to('^list$', re.IGNORECASE)
@@ -107,12 +107,15 @@ def list(message):
 def build(message, job, args):
     J = Jenkins()
     params = {key: value for (key, value) in [param.split('=') for param in args.split()]}
-    reply = J.build(job, params)
-    if reply == '':
-        message.react('ok_hand')
-        message.reply(reply)
+    if job in J.job_list():
+        reply = J.build(job, params)
+        if reply == '':
+            message.react('ok_hand')
+            message.reply(reply)
+        else:
+            message.reply("{}".format(reply))
     else:
-        message.reply("{}".format(reply))
+        message.reply("Unknown job")
 
 if __name__ == "__main__":
     try:
