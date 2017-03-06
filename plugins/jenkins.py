@@ -85,7 +85,13 @@ class Jenkins():
         while "pending" in queued_task and not queued_task["pending"]:
             response2 = requests.post(queue_url, auth=auth, headers=headers)
             queued_task = json.loads(response2.text)
-        return queued_task["executable"]["url"]
+        if queued_task is not None and \
+           "executable" in queued_task and \
+           queued_task["executable"] is not None and \
+           "url" in queued_task["executable"]:
+            return queued_task["executable"]["url"]
+        else:
+            return "Task is still in queue"
 
 
 @respond_to('^list$', re.IGNORECASE)
