@@ -71,7 +71,7 @@ class Jenkins():
         headers = {crumb_data[0]: crumb_data[1]} #, 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         url = build_method(job_name)
         response = requests.post(url, auth=auth, headers=headers, data=job_params)
-        if response.status_code == 200:
+        if response.status_code == 201:
             job_id = response.headers['Location'].split('/')[-2]
             queue_url = self._build_api_url(response.headers['Location'])
             response2 = requests.post(queue_url, auth=auth, headers=headers)
@@ -94,7 +94,7 @@ class Jenkins():
             else:
                 return "Task was queued, waiting to start"
         else:
-            return "Error queueing task"
+            return "Error queueing task, probably wrong arguments ({})".format(response.status_code)
 
 
 @respond_to('^list$', re.IGNORECASE)
