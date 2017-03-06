@@ -71,21 +71,30 @@ class Jenkins():
         headers = {crumb_data[0]: crumb_data[1]} #, 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         url = build_method(job_name)
         response = requests.post(url, auth=auth, headers=headers, data=job_params)
-        job_id = response.headers['Location'].split('/')[-2]
-        queue_url = self._build_api_url(response.headers['Location'])
-        response2 = requests.post(queue_url, auth=auth, headers=headers)
-        queued_task = json.loads(response2.text)
-        while not queued_task["buildable"]:
-            time.sleep(1)
-            response2 = requests.post(queue_url, auth=auth, headers=headers)
-            try:
-                queued_task = json.loads(response2.text)
-            except json.decoder.JSONDecodeError:
-                pass
-        while "pending" in queued_task and not queued_task["pending"]:
+        if response.status_code == 201:
+            job_id = response.headers['Location'].split('/')[-2]
+            queue_url = self._build_api_url(response.headers['Location'])
             response2 = requests.post(queue_url, auth=auth, headers=headers)
             queued_task = json.loads(response2.text)
-        return queued_task["executable"]["url"]
+            while not queued_task["buildable"]:
+                time.sleep(1)
+                response2 = requests.post(queue_url, auth=auth, headers=headers)
+                try:
+                    queued_task = json.loads(response2.text)
+                except json.decoder.JSONDecodeError:
+                    pass
+            while "pending" in queued_task and not queued_task["pending"]:
+                response2 = requests.post(queue_url, auth=auth, headers=headers)
+                queued_task = json.loads(response2.text)
+            if queued_task is not None and \
+            "executable" in queued_task and \
+            queued_task["executable"] is not None and \
+            "url" in queued_task["executable"]:
+                return queued_task["executable"]["url"]
+            else:
+                return "Task was queued, waiting to start"
+        else:
+            return "Error queueing task, probably wrong arguments ({})".format(response.status_code)
 
 
 @respond_to('^list$', re.IGNORECASE)
@@ -100,13 +109,20 @@ def list(message):
 @respond_to('build ([^ ]*)(.*)', re.IGNORECASE)
 def build(message, job, args):
     J = Jenkins()
-    params = {key: value for (key, value) in [param.split('=') for param in args.split()]}
-    reply = J.build(job, params)
-    if reply == '':
-        message.react('ok_hand')
-        message.reply(reply)
+    try:
+        params = {key: value for (key, value) in [param.split('=') for param in args.split()]}
+    except ValueError:
+        message.reply("Parameter passing is incorrect. Parameter should be KEY=value")
+        return
+    if job in J.job_list():
+        reply = J.build(job, params)
+        if reply == '':
+            message.react('ok_hand')
+            message.reply(reply)
+        else:
+            message.reply("{}".format(reply))
     else:
-        message.reply("{}".format(reply))
+        message.reply("Unknown job")
 
 if __name__ == "__main__":
     try:
