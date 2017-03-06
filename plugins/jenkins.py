@@ -109,7 +109,11 @@ def list(message):
 @respond_to('build ([^ ]*)(.*)', re.IGNORECASE)
 def build(message, job, args):
     J = Jenkins()
-    params = {key: value for (key, value) in [param.split('=') for param in args.split()]}
+    try:
+        params = {key: value for (key, value) in [param.split('=') for param in args.split()]}
+    except ValueError:
+        message.reply("Parameter passing is incorrect. Parameter should be KEY=value")
+        return
     if job in J.job_list():
         reply = J.build(job, params)
         if reply == '':
