@@ -71,27 +71,30 @@ class Jenkins():
         headers = {crumb_data[0]: crumb_data[1]} #, 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         url = build_method(job_name)
         response = requests.post(url, auth=auth, headers=headers, data=job_params)
-        job_id = response.headers['Location'].split('/')[-2]
-        queue_url = self._build_api_url(response.headers['Location'])
-        response2 = requests.post(queue_url, auth=auth, headers=headers)
-        queued_task = json.loads(response2.text)
-        while not queued_task["buildable"]:
-            time.sleep(1)
-            response2 = requests.post(queue_url, auth=auth, headers=headers)
-            try:
-                queued_task = json.loads(response2.text)
-            except json.decoder.JSONDecodeError:
-                pass
-        while "pending" in queued_task and not queued_task["pending"]:
+        if response.status_code == 200:
+            job_id = response.headers['Location'].split('/')[-2]
+            queue_url = self._build_api_url(response.headers['Location'])
             response2 = requests.post(queue_url, auth=auth, headers=headers)
             queued_task = json.loads(response2.text)
-        if queued_task is not None and \
-           "executable" in queued_task and \
-           queued_task["executable"] is not None and \
-           "url" in queued_task["executable"]:
-            return queued_task["executable"]["url"]
+            while not queued_task["buildable"]:
+                time.sleep(1)
+                response2 = requests.post(queue_url, auth=auth, headers=headers)
+                try:
+                    queued_task = json.loads(response2.text)
+                except json.decoder.JSONDecodeError:
+                    pass
+            while "pending" in queued_task and not queued_task["pending"]:
+                response2 = requests.post(queue_url, auth=auth, headers=headers)
+                queued_task = json.loads(response2.text)
+            if queued_task is not None and \
+            "executable" in queued_task and \
+            queued_task["executable"] is not None and \
+            "url" in queued_task["executable"]:
+                return queued_task["executable"]["url"]
+            else:
+                return "Task was queued, waiting to start"
         else:
-            return "Task was queued, waiting to start"
+            return "Error queueing task"
 
 
 @respond_to('^list$', re.IGNORECASE)
