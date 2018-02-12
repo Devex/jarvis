@@ -10,3 +10,4 @@ import time
 @respond_to('^test$', re.IGNORECASE)
 def test(message):
     message.reply("Hi there")
+    message.react('+1')
