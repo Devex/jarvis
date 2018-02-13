@@ -11,8 +11,8 @@ multi-key-dict = "==2.0.3"
 pbr = "==1.9.1"
 python-jenkins = "==0.4.12"
 requests = "==2.10.0"
-slackbot = "==0.3.1"
-slacker = "==0.9.15"
+slackbot = ">=0.5.1"
+slacker = ">=0.9"
 websocket-client = "==0.37.0"
 
 [requires]

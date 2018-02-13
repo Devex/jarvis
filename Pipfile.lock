@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "009ca62727718e950158949f82fb9ee5aadfa04c2e97d3d725e116906963ac0e"
+            "sha256": "1ada72b1962a0e291fbde3aff06ce59495a2ff551ecc6ed8ac6d45f2a121ac1c"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -68,16 +68,16 @@
         },
         "slackbot": {
             "hashes": [
-                "sha256:a164d1cb16500bd80c8d0df89de78984f3c868b5e4f1a8722b8f7dc9a3d25b61",
-                "sha256:790152df86e4078ffc08acbf396da032b91de2ce419d5cdec5997cd6c24100d6"
+                "sha256:57d05ed788aac759c4ccba0fc5e751cc76f5f8c2f1b6588ac0be9cb18e4f5fe8",
+                "sha256:74890aab5b0443b96edffb09894a9e121593c195be905627ee0af222bc00124a"
             ],
-            "version": "==0.3.1"
+            "version": "==0.5.1"
         },
         "slacker": {
             "hashes": [
-                "sha256:9c0985ce401424897f7e7205d07c685e8baf031b0185499e4e8f3c425a68b931"
+                "sha256:5d54950a1956c6faff3c82cd116aed4436cf0e322a72747d77b9189d5ec7f8cb"
             ],
-            "version": "==0.9.15"
+            "version": "==0.9.60"
         },
         "websocket-client": {
             "hashes": [
