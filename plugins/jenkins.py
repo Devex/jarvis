@@ -96,6 +96,8 @@ class Jenkins():
         else:
             return "Error queueing task, probably wrong arguments ({})".format(response.status_code)
 
+def smart_thread_reply(message, reply):
+    message.reply(reply, in_thread=('thread_ts' in message.body))
 
 @respond_to('^list$', re.IGNORECASE)
 def list(message):
@@ -103,7 +105,7 @@ def list(message):
     reply = "I found {} jobs:\n".format(J.job_count)
     for job in J.job_list():
       reply += "{}\n".format(job)
-    message.reply(reply)
+    smart_thread_reply(message, reply)
 
 
 @respond_to('build ([^ ]*)(.*)', re.IGNORECASE)
@@ -112,17 +114,17 @@ def build(message, job, args):
     try:
         params = {key: value for (key, value) in [param.split('=') for param in args.split()]}
     except ValueError:
-        message.reply("Parameter passing is incorrect. Parameter should be KEY=value")
+        smart_thread_reply(message, "Parameter passing is incorrect. Parameter should be KEY=value")
         return
     if job in J.job_list():
         reply = J.build(job, params)
         if reply == '':
             message.react('ok_hand')
-            message.reply(reply)
+            smart_thread_reply(message, reply)
         else:
-            message.reply("{}".format(reply))
+            smart_thread_reply(message, reply)
     else:
-        message.reply("Unknown job")
+        smart_thread_reply(message, "Unknown job")
 
 if __name__ == "__main__":
     try:
