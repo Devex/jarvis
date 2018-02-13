@@ -1,0 +1,90 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "009ca62727718e950158949f82fb9ee5aadfa04c2e97d3d725e116906963ac0e"
+        },
+        "host-environment-markers": {
+            "implementation_name": "cpython",
+            "implementation_version": "3.6.4",
+            "os_name": "posix",
+            "platform_machine": "x86_64",
+            "platform_python_implementation": "CPython",
+            "platform_release": "17.4.0",
+            "platform_system": "Darwin",
+            "platform_version": "Darwin Kernel Version 17.4.0: Sun Dec 17 09:19:54 PST 2017; root:xnu-4570.41.2~1/RELEASE_X86_64",
+            "python_full_version": "3.6.4",
+            "python_version": "3.6",
+            "sys_platform": "darwin"
+        },
+        "pipfile-spec": 6,
+        "requires": {
+            "python_version": "3.6"
+        },
+        "sources": [
+            {
+                "name": "pypi",
+                "url": "https://pypi.python.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {
+        "multi-key-dict": {
+            "hashes": [
+                "sha256:deebdec17aa30a1c432cb3f437e81f8621e1c0542a0c0617a74f71e232e9939e",
+                "sha256:cb1e00aa9d8192496cc0cc040f6d9602f35e4cf099e866248be06b04fd45b42b",
+                "sha256:fb67a532d7361a66820aa1e8fe6c0c939f4c34a3a09a3e8db199ce7b77c4fb78",
+                "sha256:3a1e1fc705a30a7de1a153ec2992b3ca3655ccd9225d2e427fe6525c8f160d6d"
+            ],
+            "version": "==2.0.3"
+        },
+        "pbr": {
+            "hashes": [
+                "sha256:fdfda7175428e7527635dfef42d0eda5b609b2d5b1ac707045dbaed7a7307c7f",
+                "sha256:3997406c90894ebf3d1371811c1e099721440a901f946ca6dc4383350403ed51"
+            ],
+            "version": "==1.9.1"
+        },
+        "python-jenkins": {
+            "hashes": [
+                "sha256:68a1a758131e9d89d8667e2f4df83f28f84403c194e88317d3523b9de2dc9cd3",
+                "sha256:673868980f4b2312447843a86b61e18777a16a1adf5eb9cdfd56cbbfa3e50ee4"
+            ],
+            "version": "==0.4.12"
+        },
+        "requests": {
+            "hashes": [
+                "sha256:09bc1b5f3a56cd8c48d433213a8cba51a67d12936568f73b5f1793fcb0c0979e",
+                "sha256:63f1815788157130cee16a933b2ee184038e975f0017306d723ac326b5525b54"
+            ],
+            "version": "==2.10.0"
+        },
+        "six": {
+            "hashes": [
+                "sha256:832dc0e10feb1aa2c68dcc57dbb658f1c7e65b9b61af69048abc87a2db00a0eb",
+                "sha256:70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9"
+            ],
+            "version": "==1.11.0"
+        },
+        "slackbot": {
+            "hashes": [
+                "sha256:a164d1cb16500bd80c8d0df89de78984f3c868b5e4f1a8722b8f7dc9a3d25b61",
+                "sha256:790152df86e4078ffc08acbf396da032b91de2ce419d5cdec5997cd6c24100d6"
+            ],
+            "version": "==0.3.1"
+        },
+        "slacker": {
+            "hashes": [
+                "sha256:9c0985ce401424897f7e7205d07c685e8baf031b0185499e4e8f3c425a68b931"
+            ],
+            "version": "==0.9.15"
+        },
+        "websocket-client": {
+            "hashes": [
+                "sha256:678b246d816b94018af5297e72915160e2feb042e0cde1a9397f502ac3a52f41"
+            ],
+            "version": "==0.37.0"
+        }
+    },
+    "develop": {}
+}
