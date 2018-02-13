@@ -9,5 +9,5 @@ import time
 
 @respond_to('^test$', re.IGNORECASE)
 def test(message):
-    message.reply('foo', in_thread=True)
+    message.reply('foo', in_thread=('thread_ts' in message.body))
     message.react('+1')
