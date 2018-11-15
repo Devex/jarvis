@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvis
+  namespace: jarvis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jarvis
+  template:
+    metadata:
+      labels:
+        app: jarvis
+    spec:
+      containers:
+      - name: jarvis
+        image: 406396564037.dkr.ecr.us-east-1.amazonaws.com/jarvis:latest
+        imagePullPolicy: Always
+        env:
+        - name: JENKINS_USER
+          value: marvin@devex.com
+        - name: JENKINS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: jarvis-secrets
+              key: jenkins_password
+        - name: JENKINS_URL
+          value: https://devex.ci.cloudbees.com
+        - name: SLACKBOT_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: jarvis-secrets
+              key: slack_token
+        - name: SLACKBOT_ERRORS_DEST
+          value: natx
