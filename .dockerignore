@@ -1,0 +1,6 @@
+# Remove everything
+*
+
+!Pipfile*
+!plugins
+!*.py
