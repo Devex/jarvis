@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: jarvis
-        image: 406396564037.dkr.ecr.us-east-1.amazonaws.com/jarvis:latest
+        image: @@IMAGE@@
         imagePullPolicy: Always
         env:
         - name: JENKINS_USER
