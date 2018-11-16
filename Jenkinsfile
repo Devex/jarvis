@@ -27,4 +27,13 @@ pipeline {
             }
         }
     }
+    post {
+        success {
+            script {
+                if (env.BRANCH_NAME == 'master' ) {
+                    build job: 'jarvis-deploy', wait: false
+                }
+            }
+        }
+    }
 }
