@@ -4,21 +4,6 @@ Jarvis is a replacement bot for Marvin, built using Python's slackbot, which hel
 
 Jarvis is currently ready to be used as a container.
 
-### Build
-
-Newer versions must be tagged in git repository, and pushed/PR'd to the repository:
-
-```
-git tag -a X.X.X
-git push
-```
-
-In order to build it, use the following command in the root of the repository:
-
-```
-docker build -t jarvis:$(git tag --sort v:refname | tail -1) .
-```
-
 ### Environment variables
 
 Jarvis uses the following environment variables:
@@ -28,6 +13,14 @@ Jarvis uses the following environment variables:
 - `JENKINS_URL`: URL where Jenkins is reachable
 - `JENKINS_USER`: User to use when talking to Jenkins
 - `JENKINS_PASSWORD`:  Password for the corresponding Jenkins user
+
+### Build
+
+In order to build it, use the following command in the root of the repository:
+
+```
+docker build -t jarvis .
+```
 
 ### Running locally
 
@@ -40,7 +33,7 @@ docker run --rm \
        --env JENKINS_USER=${JENKINS_USER} \
        --env SLACKBOT_API_TOKEN=${SLACKBOT_API_TOKEN} \
        --env SLACKBOT_ERRORS_DEST=${SLACKBOT_ERRORS_DEST} \
-       jarvis:$(git tag --sort v:refname | tail -1)
+       jarvis
 ```
 
 ### Publishing new version
@@ -49,14 +42,10 @@ Once the new version is ready for deploy, publish the container:
 
 ```
 aws ecr get-login --no-include-email | bash
-docker tag \
-       jarvis:$(git tag --sort v:refname | tail -1) \
-       406396564037.dkr.ecr.us-east-1.amazonaws.com/jarvis:$(git tag --sort v:refname | tail -1)
-docker tag \
-       jarvis:$(git tag --sort v:refname | tail -1) \
-       406396564037.dkr.ecr.us-east-1.amazonaws.com/jarvis:latest
-docker push 406396564037.dkr.ecr.us-east-1.amazonaws.com/jarvis:$(git tag --sort v:refname | tail -1)
-docker push 406396564037.dkr.ecr.us-east-1.amazonaws.com/jarvis:latest
+REPO=406396564037.dkr.ecr.us-east-1.amazonaws.com/jarvis
+TAG=$(git rev-parse HEAD)
+docker build -t ${REPO}:${TAG} .
+docker push ${REPO}:${TAG}
 ```
 
 ### Running in K8s cluster
@@ -69,5 +58,5 @@ kubectl create secret generic jarvis-secrets \
         --from-literal=jenkins_password=${JENKINS_PASSWORD} \
         --from-literal=slack_token=${SLACKBOT_API_TOKEN} \
         -n jarvis
-kubectl apply -f manifests/jarvis-deploy.yaml
+sed -e "s/@@IMAGE@@/${REPO}:${TAG}/" manifests/jarvis-deploy.yaml | kubectl apply -f -
 ```
