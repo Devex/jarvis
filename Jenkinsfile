@@ -19,19 +19,45 @@ pipeline {
             steps {
                 script {
                     if (env.BRANCH_NAME == "master") {
-                        sh 'sudo pip install awscli'
                         sh 'aws ecr get-login --region us-east-1 --no-include-email | bash'
                         sh 'docker push ${REPO}:${TAG}'
                     }
                 }
             }
         }
-    }
-    post {
-        success {
-            script {
-                if (env.BRANCH_NAME == 'master' ) {
-                    build job: 'jarvis-deploy', wait: false
+        stage("Deploy") {
+            steps {
+                script {
+                    if (env.BRANCH_NAME == 'master' ) {
+                        sh '''
+                            KUBECTL_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+                            curl -LO \
+                                https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl
+                            chmod +x kubectl
+                            mkdir -p ~/.local/bin/
+                            mv kubectl ~/.local/bin/
+                        '''
+                        sh '''
+                            mkdir -p ~/.kube
+                            aws s3 cp s3://jenkins-docker-slave/services-kubeconfig.yaml ~/.kube/config
+                        '''
+                        checkout([
+                            $class: 'GitSCM',
+                            branches: [[name: "master"]],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '.']],
+                            submoduleCfg: [],
+                            userRemoteConfigs: [[
+                                url: 'git@github.com:Devex/jarvis.git'
+                            ]]
+                        ])
+                        sh '''
+                            export PATH=$PATH:~/.local/bin
+
+                            kubectl delete deploy/jarvis -n jarvis
+                            sed -e "s#@@IMAGE@@#${REPO}:${TAG}#" manifests/jarvis-deploy.yaml | kubectl apply -f -
+                        '''
+                    }
                 }
             }
         }
