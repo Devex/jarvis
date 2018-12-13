@@ -19,14 +19,14 @@ spec:
         imagePullPolicy: Always
         env:
         - name: JENKINS_USER
-          value: marvin@devex.com
+          value: bot@devex.com
         - name: JENKINS_PASSWORD
           valueFrom:
             secretKeyRef:
               name: jarvis-secrets
               key: jenkins_password
         - name: JENKINS_URL
-          value: https://devex.ci.cloudbees.com
+          value: https://jenkins.devex.io
         - name: SLACKBOT_API_TOKEN
           valueFrom:
             secretKeyRef:
