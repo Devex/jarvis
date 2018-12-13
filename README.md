@@ -48,7 +48,7 @@ docker build -t ${REPO}:${TAG} .
 docker push ${REPO}:${TAG}
 ```
 
-### Running in K8s cluster
+### Deploying
 
 With the `JENKINS_PASSWORD` and the `SLACKBOT_API_TOKEN` exported, use the following commands:
 
