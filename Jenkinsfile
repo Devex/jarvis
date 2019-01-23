@@ -41,16 +41,6 @@ pipeline {
                             mkdir -p ~/.kube
                             aws s3 cp s3://jenkins-docker-slave/services-kubeconfig.yaml ~/.kube/config
                         '''
-                        checkout([
-                            $class: 'GitSCM',
-                            branches: [[name: "master"]],
-                            doGenerateSubmoduleConfigurations: false,
-                            extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '.']],
-                            submoduleCfg: [],
-                            userRemoteConfigs: [[
-                                url: 'git@github.com:Devex/jarvis.git'
-                            ]]
-                        ])
                         sh '''
                             export PATH=$PATH:~/.local/bin
 
