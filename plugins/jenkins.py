@@ -92,16 +92,22 @@ class Jenkins():
                 except json.decoder.JSONDecodeError:
                     pass
                 retries += 1
-            while "pending" in queued_task and not queued_task["pending"]:
-                response2 = requests.post(queue_url, auth=auth, headers=headers)
+            retries = 1
+            while queued_task["buildable"] and \
+                "pending" in queued_task and not queued_task["pending"] and \
+                    retries < max_retries:
+                time.sleep(2 ^ retries - 1)
+                response2 = requests.post(
+                    queue_url, auth=auth, headers=headers)
                 queued_task = json.loads(response2.text)
+                retries += 1
             if queued_task is not None and \
-            "executable" in queued_task and \
-            queued_task["executable"] is not None and \
-            "url" in queued_task["executable"]:
+                "executable" in queued_task and \
+                queued_task["executable"] is not None and \
+                    "url" in queued_task["executable"]:
                 return queued_task["executable"]["url"]
             else:
-                return "Task was queued, waiting to start"
+                return "Task was accepted, check on Jenkins UI for execution {}".format(response.headers['Location'])
         else:
             return "Error queueing task, probably wrong arguments ({})".format(response.status_code)
 
