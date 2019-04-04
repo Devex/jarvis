@@ -70,7 +70,6 @@ class Jenkins():
             build_method = self._build_buildWithParams_url
         auth = HTTPBasicAuth(self.username, self.password)
         crumb_data = self._get_crumb()
-        # , 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         headers = {crumb_data[0]: crumb_data[1]}
         url = build_method(job_name)
         response = requests.post(
@@ -163,8 +162,9 @@ if __name__ == "__main__":
         elif command.startswith("build"):
             command_parts = command.split()
             job, args = command_parts[1], command_parts[2:]
-            params = {key: value for (key, value) in [param.split('=') for param in args]}
+            params = {key: value for (key, value) in [
+                param.split('=') for param in args]}
             result = J.build(job, params)
             print(result)
-        command=input("> ")
+        command = input("> ")
     print("Quitting test mode")
