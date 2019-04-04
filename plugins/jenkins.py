@@ -39,7 +39,8 @@ class Jenkins():
         return "{}".format(self._build_api_url(crumbIssuer_url))
 
     def _get_crumb(self):
-        response = requests.get(self._build_crumbIssuer_url(), auth=HTTPBasicAuth(self.username, self.password))
+        response = requests.get(self._build_crumbIssuer_url(
+        ), auth=HTTPBasicAuth(self.username, self.password))
         crumb_data = json.loads(response.text)
         return crumb_data['crumbRequestField'], crumb_data['crumb']
 
@@ -64,14 +65,16 @@ class Jenkins():
 
     def build(self, job_name, job_params=None):
         if job_params is None or job_params == {}:
-            build_method=self._build_build_url
+            build_method = self._build_build_url
         else:
-            build_method=self._build_buildWithParams_url
+            build_method = self._build_buildWithParams_url
         auth = HTTPBasicAuth(self.username, self.password)
         crumb_data = self._get_crumb()
-        headers = {crumb_data[0]: crumb_data[1]} #, 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+        # , 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+        headers = {crumb_data[0]: crumb_data[1]}
         url = build_method(job_name)
-        response = requests.post(url, auth=auth, headers=headers, data=job_params)
+        response = requests.post(
+            url, auth=auth, headers=headers, data=job_params)
         if response.status_code == 201:
             job_id = response.headers['Location'].split('/')[-2]
             queue_url = self._build_api_url(response.headers['Location'])
@@ -102,15 +105,17 @@ class Jenkins():
         else:
             return "Error queueing task, probably wrong arguments ({})".format(response.status_code)
 
+
 def smart_thread_reply(message, reply):
     message.reply(reply, in_thread=('thread_ts' in message.body))
+
 
 @respond_to('^list$', re.IGNORECASE)
 def list(message):
     J = Jenkins()
     reply = "I found {} jobs:\n".format(J.job_count)
     for job in J.job_list():
-      reply += "{}\n".format(job)
+        reply += "{}\n".format(job)
     smart_thread_reply(message, reply)
 
 
@@ -118,9 +123,11 @@ def list(message):
 def build(message, job, args):
     J = Jenkins()
     try:
-        params = {key: value for (key, value) in [param.split('=') for param in args.split()]}
+        params = {key: value for (key, value) in [
+            param.split('=') for param in args.split()]}
     except ValueError:
-        smart_thread_reply(message, "Parameter passing is incorrect. Parameter should be KEY=value")
+        smart_thread_reply(
+            message, "Parameter passing is incorrect. Parameter should be KEY=value")
         return
     if job in J.job_list():
         reply = J.build(job, params)
@@ -132,14 +139,15 @@ def build(message, job, args):
     else:
         smart_thread_reply(message, "Unknown job")
 
+
 if __name__ == "__main__":
     try:
         input = raw_input
     except NameError:
         pass
     J = Jenkins()
-    help_message="You can use help, list, build, or quit"
-    command=input("> ")
+    help_message = "You can use help, list, build, or quit"
+    command = input("> ")
     while command != "quit":
         if command == "help":
             print(help_message)
