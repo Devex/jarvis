@@ -21,14 +21,15 @@ class Jenkins():
             self.password = JENKINS_PASSWORD
         else:
             self.password = password
-        response = requests.get(self._build_api_url(), auth=HTTPBasicAuth(self.username, self.password))
+        response = requests.get(self._build_api_url(
+        ), auth=HTTPBasicAuth(self.username, self.password))
         self.data = json.loads(response.text)
         self.job_count = len(self.data['jobs'])
 
     def job_list(self):
         return [job['name'] for job in self.data['jobs']]
 
-    def _build_api_url(self, path = None):
+    def _build_api_url(self, path=None):
         if path is None:
             path = "{}/".format(self.url)
         return "{}{}".format(path, 'api/json')
@@ -38,7 +39,8 @@ class Jenkins():
         return "{}".format(self._build_api_url(crumbIssuer_url))
 
     def _get_crumb(self):
-        response = requests.get(self._build_crumbIssuer_url(), auth=HTTPBasicAuth(self.username, self.password))
+        response = requests.get(self._build_crumbIssuer_url(
+        ), auth=HTTPBasicAuth(self.username, self.password))
         crumb_data = json.loads(response.text)
         return crumb_data['crumbRequestField'], crumb_data['crumb']
 
@@ -63,48 +65,62 @@ class Jenkins():
 
     def build(self, job_name, job_params=None):
         if job_params is None or job_params == {}:
-            build_method=self._build_build_url
+            build_method = self._build_build_url
         else:
-            build_method=self._build_buildWithParams_url
+            build_method = self._build_buildWithParams_url
         auth = HTTPBasicAuth(self.username, self.password)
         crumb_data = self._get_crumb()
-        headers = {crumb_data[0]: crumb_data[1]} #, 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+        headers = {crumb_data[0]: crumb_data[1]}
         url = build_method(job_name)
-        response = requests.post(url, auth=auth, headers=headers, data=job_params)
+        response = requests.post(
+            url, auth=auth, headers=headers, data=job_params)
         if response.status_code == 201:
             job_id = response.headers['Location'].split('/')[-2]
             queue_url = self._build_api_url(response.headers['Location'])
             response2 = requests.post(queue_url, auth=auth, headers=headers)
             queued_task = json.loads(response2.text)
-            while not queued_task["buildable"]:
-                time.sleep(1)
-                response2 = requests.post(queue_url, auth=auth, headers=headers)
+            max_retries = 5
+            retries = 1
+            while not queued_task["buildable"] and \
+                    retries < max_retries:
+                time.sleep(2 ^ retries - 1)
+                response2 = requests.post(
+                    queue_url, auth=auth, headers=headers)
                 try:
                     queued_task = json.loads(response2.text)
                 except json.decoder.JSONDecodeError:
                     pass
-            while "pending" in queued_task and not queued_task["pending"]:
-                response2 = requests.post(queue_url, auth=auth, headers=headers)
+                retries += 1
+            retries = 1
+            while queued_task["buildable"] and \
+                "pending" in queued_task and not queued_task["pending"] and \
+                    retries < max_retries:
+                time.sleep(2 ^ retries - 1)
+                response2 = requests.post(
+                    queue_url, auth=auth, headers=headers)
                 queued_task = json.loads(response2.text)
+                retries += 1
             if queued_task is not None and \
-            "executable" in queued_task and \
-            queued_task["executable"] is not None and \
-            "url" in queued_task["executable"]:
+                "executable" in queued_task and \
+                queued_task["executable"] is not None and \
+                    "url" in queued_task["executable"]:
                 return queued_task["executable"]["url"]
             else:
-                return "Task was queued, waiting to start"
+                return "Task was accepted, check on Jenkins UI for execution {}".format(response.headers['Location'])
         else:
             return "Error queueing task, probably wrong arguments ({})".format(response.status_code)
 
+
 def smart_thread_reply(message, reply):
     message.reply(reply, in_thread=('thread_ts' in message.body))
+
 
 @respond_to('^list$', re.IGNORECASE)
 def list(message):
     J = Jenkins()
     reply = "I found {} jobs:\n".format(J.job_count)
     for job in J.job_list():
-      reply += "{}\n".format(job)
+        reply += "{}\n".format(job)
     smart_thread_reply(message, reply)
 
 
@@ -112,9 +128,11 @@ def list(message):
 def build(message, job, args):
     J = Jenkins()
     try:
-        params = {key: value for (key, value) in [param.split('=') for param in args.split()]}
+        params = {key: value for (key, value) in [
+            param.split('=') for param in args.split()]}
     except ValueError:
-        smart_thread_reply(message, "Parameter passing is incorrect. Parameter should be KEY=value")
+        smart_thread_reply(
+            message, "Parameter passing is incorrect. Parameter should be KEY=value")
         return
     if job in J.job_list():
         reply = J.build(job, params)
@@ -126,14 +144,15 @@ def build(message, job, args):
     else:
         smart_thread_reply(message, "Unknown job")
 
+
 if __name__ == "__main__":
     try:
         input = raw_input
     except NameError:
         pass
     J = Jenkins()
-    help_message="You can use help, list, build, or quit"
-    command=input("> ")
+    help_message = "You can use help, list, build, or quit"
+    command = input("> ")
     while command != "quit":
         if command == "help":
             print(help_message)
@@ -143,8 +162,9 @@ if __name__ == "__main__":
         elif command.startswith("build"):
             command_parts = command.split()
             job, args = command_parts[1], command_parts[2:]
-            params = {key: value for (key, value) in [param.split('=') for param in args]}
+            params = {key: value for (key, value) in [
+                param.split('=') for param in args]}
             result = J.build(job, params)
             print(result)
-        command=input("> ")
+        command = input("> ")
     print("Quitting test mode")
