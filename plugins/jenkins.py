@@ -21,14 +21,15 @@ class Jenkins():
             self.password = JENKINS_PASSWORD
         else:
             self.password = password
-        response = requests.get(self._build_api_url(), auth=HTTPBasicAuth(self.username, self.password))
+        response = requests.get(self._build_api_url(
+        ), auth=HTTPBasicAuth(self.username, self.password))
         self.data = json.loads(response.text)
         self.job_count = len(self.data['jobs'])
 
     def job_list(self):
         return [job['name'] for job in self.data['jobs']]
 
-    def _build_api_url(self, path = None):
+    def _build_api_url(self, path=None):
         if path is None:
             path = "{}/".format(self.url)
         return "{}{}".format(path, 'api/json')
@@ -76,13 +77,18 @@ class Jenkins():
             queue_url = self._build_api_url(response.headers['Location'])
             response2 = requests.post(queue_url, auth=auth, headers=headers)
             queued_task = json.loads(response2.text)
-            while not queued_task["buildable"]:
-                time.sleep(1)
-                response2 = requests.post(queue_url, auth=auth, headers=headers)
+            max_retries = 5
+            retries = 1
+            while not queued_task["buildable"] and \
+                    retries < max_retries:
+                time.sleep(2 ^ retries - 1)
+                response2 = requests.post(
+                    queue_url, auth=auth, headers=headers)
                 try:
                     queued_task = json.loads(response2.text)
                 except json.decoder.JSONDecodeError:
                     pass
+                retries += 1
             while "pending" in queued_task and not queued_task["pending"]:
                 response2 = requests.post(queue_url, auth=auth, headers=headers)
                 queued_task = json.loads(response2.text)
