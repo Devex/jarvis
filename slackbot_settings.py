@@ -3,7 +3,7 @@ import os
 DEBUG = os.environ.get('DEBUG', False)
 API_TOKEN = os.environ['SLACKBOT_API_TOKEN'] or ''
 DEFAULT_REPLY = "I don't understand this reference, sir."
-ERRORS_TO = os.environ['SLACKBOT_ERRORS_DEST'] or None
+ERRORS_TO = os.environ.get('SLACKBOT_ERRORS_DEST', None)
 PLUGINS = [
     'jarvis.plugins',
 ]
