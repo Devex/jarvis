@@ -1,4 +1,8 @@
+import logging
 import jenkins
+
+
+logger = logging.getLogger(__name__)
 
 
 def connect(url, user, password):
@@ -16,10 +20,13 @@ def parse_args(parameters):
 
 class JenkinsAPI(object):
     def __init__(self, jenkins):
+        logger.info('Initializing Jenkins API')
         self._server = jenkins
         self.user = self._server.get_whoami()
         self.version = self._server.get_version()
         self._jobs = None
+        logger.info('I am {} at {} (v.{})'.format(
+            self.user['fullName'], self._server.server, self.version))
 
     @property
     def server(self):
