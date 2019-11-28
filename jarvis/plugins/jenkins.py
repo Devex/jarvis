@@ -3,7 +3,7 @@ import logging
 from slackbot.bot import respond_to
 from slackbot_settings import JENKINS_URL, JENKINS_USER, JENKINS_PASSWORD
 
-from jarvis.plugins.jenkins_api import connect
+import jarvis.plugins.jenkins_api as api
 
 
 def smart_thread_reply(message, reply):
@@ -11,14 +11,14 @@ def smart_thread_reply(message, reply):
 
 
 logger = logging.getLogger(__name__)
-api = connect(JENKINS_URL, JENKINS_USER, JENKINS_PASSWORD)
+server = api.connect(JENKINS_URL, JENKINS_USER, JENKINS_PASSWORD)
 
 
 @respond_to('^list$', re.IGNORECASE)
 def list(message):
     logger.debug('list command invoked')
-    reply = "I found {} jobs:\n".format(len(api.jobs))
-    for job in api.jobs:
+    reply = "I found {} jobs:\n".format(len(server.jobs))
+    for job in server.jobs:
         reply += "{}\n".format(job['name'])
     smart_thread_reply(message, reply)
 
@@ -42,12 +42,19 @@ def build(message, job_name, args):
         response += " with parameters {}".format(args.strip())
     else:
         response += " without parameters"
-    job_info = api.run(job_name, args)
-    logger.debug('Jenkins replied: {}'.format(job_info))
-    response += " ({})".format(job_info['url'])
-    logger.debug(response)
-    if response == '':
-        message.react('ok_hand')
-        smart_thread_reply(message, response)
+    try:
+        job_info = server.run(job_name, args)
+        logger.debug('Jenkins replied: {}'.format(job_info))
+    except api.UnknownJobError as e:
+        job_info = str(e)
+        smart_thread_reply(message, str(e))
     else:
-        smart_thread_reply(message, response)
+        response += " ({})".format(job_info['url'])
+        logger.debug(response)
+        if response == '':
+            message.react('ok_hand')
+            smart_thread_reply(message, response)
+        else:
+            smart_thread_reply(message, response)
+    finally:
+        logger.debug('Jenkins replied: {}'.format(job_info))

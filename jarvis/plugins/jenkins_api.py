@@ -18,6 +18,14 @@ def parse_args(parameters):
         param.split('=') for param in parameters.split()]}
 
 
+class UnknownJobError(Exception):
+    def __init__(self, job):
+        self._job = job
+
+    def __str__(self):
+        return 'Unknown job {}'.format(self._job)
+
+
 class JenkinsAPI(object):
     def __init__(self, jenkins):
         logger.info('Initializing Jenkins API')
@@ -48,4 +56,4 @@ class JenkinsAPI(object):
             self._server.build_job(job, args)
             return self._server.get_job_info(job)
         else:
-            raise Exception("Unknown job: {}".format(job))
+            raise UnknownJobError(job)
