@@ -1,12 +1,9 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [packages]
-
 multi-key-dict = "==2.0.3"
 pbr = "==1.9.1"
 python-jenkins = "==1.5.0"
@@ -14,10 +11,9 @@ requests = ">=2.20.0"
 slackbot = ">=0.5.1"
 slacker = ">=0.9"
 websocket-client = "==0.37.0"
+jinja2 = "*"
 
 [requires]
 python_version = "3.6"
 
-
 [dev-packages]
-
