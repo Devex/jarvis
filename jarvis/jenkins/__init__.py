@@ -8,11 +8,6 @@ from jarvis.jenkins.exceptions import UnknownJobError
 logger = logging.getLogger(__name__)
 
 
-def parse_args(parameters):
-    return {key: value for key, value in [
-        param.split('=') for param in parameters.split()]}
-
-
 class JenkinsAPI(object):
     def __init__(self, jenkins):
         logger.info('Initializing Jenkins API')
@@ -41,9 +36,10 @@ class JenkinsAPI(object):
     def job_names(self):
         return [job['name'] for job in self.jobs]
 
-    def run(self, job, parameters=None):
+    def run(self, job, args=None):
+        if args is None:
+            args = ''
         if job in self.job_names:
-            args = parse_args(parameters)
             self._server.build_job(job, args)
             return self._server.get_job_info(job)
         else:

@@ -23,6 +23,8 @@ This is what I know about `{{ job.name }}` ({{ job.url }}):
 {% if param.choices %}>   Possible choices are : {% for choice in param.choices %}
 >     - `{{ choice }}` {% endfor %} {% endif %} {% endfor %}
 ''')
+build_template = Template(
+    'Building `{{ build.name }}` with parameters `{{ args }}` ({{ build.url }})')
 
 
 @respond_to('^list$', re.IGNORECASE)
@@ -41,33 +43,14 @@ def build(message, job_name, args):
         args,
     ))
     try:
-        {key: value for (key, value) in [
-            param.split('=') for param in args.split()]}
-    except ValueError:
-        logger.error('Parameters in build are wrong: {}'.format(args))
-        smart_thread_reply(
-            message, "Parameter passing is incorrect. Parameter should be `KEY=value`")
-        return
-    response = "Building {}".format(job_name)
-    if args != '':
-        response += " with parameters {}".format(args.strip())
-    else:
-        response += " without parameters"
-    try:
-        job_info = server.run(job_name, args)
-        logger.debug('Jenkins replied: {}'.format(job_info))
+        job = server.jobs[job_name]
+        build = job.run(args)
     except UnknownJobError as e:
         smart_thread_reply(message, str(e))
+        return
     else:
-        response += " ({})".format(job_info['url'])
-        logger.debug(response)
-        if response == '':
-            message.react('ok_hand')
-            smart_thread_reply(message, response)
-        else:
-            smart_thread_reply(message, response)
-    finally:
-        logger.debug('Jenkins replied: {}'.format(job_info))
+        smart_thread_reply(
+            message, build_template.render(build=build, args=args.strip()))
 
 
 @respond_to('describe ([^ ]*)', re.IGNORECASE)

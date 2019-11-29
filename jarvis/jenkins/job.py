@@ -5,6 +5,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def parse_args(parameters):
+    return {key: value for key, value in [
+        param.split('=') for param in parameters.split()]}
+
+
 def parse_params(job_info):
     params = []
     param_defs_properties = [item for item in job_info.get(
@@ -39,6 +44,10 @@ class Job(MutableMapping):
         self._job['fullDisplayName'] = job_info['fullDisplayName']
         self._job['description'] = job_info['description']
         self.params = parse_params(job_info)
+
+    def run(self, args):
+        self._server.build_job(self._job['name'], parse_args(args))
+        return self._server.get_job_info(self._job['name'])
 
     def __getitem__(self, key):
         return self._job[key]
