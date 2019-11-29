@@ -3,7 +3,7 @@ class UnknownJobError(Exception):
         self._job = job
 
     def __str__(self):
-        return 'Unknown job {}'.format(self._job)
+        return 'Unknown job `{}`'.format(self._job)
 
 
 class ArgumentsFormatError(Exception):

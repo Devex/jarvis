@@ -2,6 +2,7 @@ from collections.abc import MutableMapping
 import logging
 
 from jarvis.jenkins.job import Job
+from jarvis.jenkins.exceptions import UnknownJobError
 
 
 logger = logging.getLogger(__name__)
@@ -14,7 +15,10 @@ class Jobs(MutableMapping):
         self._update()
 
     def __getitem__(self, key):
-        return self._jobs[key]
+        try:
+            return self._jobs[key]
+        except KeyError as e:
+            raise UnknownJobError(str(e))
 
     def __setitem__(self, key, value):
         self._jobs[key] = value
