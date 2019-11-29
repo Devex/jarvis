@@ -1,13 +1,20 @@
 from collections.abc import MutableMapping
 import logging
 
+from jarvis.jenkins.exceptions import ArgumentsFormatError
+
 
 logger = logging.getLogger(__name__)
 
 
-def parse_args(parameters):
-    return {key: value for key, value in [
-        param.split('=') for param in parameters.split()]}
+def parse_args(args):
+    args = args.strip()
+    try:
+        params = {key: value for key, value in [
+            param.split('=') for param in args.split()]}
+    except ValueError:
+        raise ArgumentsFormatError(args)
+    return params
 
 
 def parse_params(job_info):

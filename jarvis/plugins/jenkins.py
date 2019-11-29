@@ -5,7 +5,7 @@ from slackbot.bot import respond_to
 from slackbot_settings import JENKINS_URL, JENKINS_USER, JENKINS_PASSWORD
 
 from jarvis.jenkins import JenkinsAPI as api
-from jarvis.jenkins.exceptions import UnknownJobError
+from jarvis.jenkins.exceptions import UnknownJobError, ArgumentsFormatError
 
 
 def smart_thread_reply(message, reply):
@@ -45,7 +45,7 @@ def build(message, job_name, args):
     try:
         job = server.jobs[job_name]
         build = job.run(args)
-    except UnknownJobError as e:
+    except (UnknownJobError, ArgumentsFormatError) as e:
         smart_thread_reply(message, str(e))
         return
     else:
