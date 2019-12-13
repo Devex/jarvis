@@ -1,7 +1,9 @@
 from collections.abc import MutableMapping
 import logging
 
-from jarvis.jenkins.exceptions import ArgumentsFormatError
+import requests
+
+from jarvis.jenkins.exceptions import ArgumentsFormatError, ArgumentsRequiredError
 
 
 logger = logging.getLogger(__name__)
@@ -53,7 +55,13 @@ class Job(MutableMapping):
         self.params = parse_params(job_info)
 
     def run(self, args):
-        self._server.build_job(self._job['name'], parse_args(args))
+        try:
+            self._server.build_job(self._job['name'], parse_args(args))
+        except requests.exceptions.HTTPError as e:
+            if e.response.reason == 'Nothing is submitted':
+                raise ArgumentsRequiredError(self._job['name'])
+            else:
+                raise e
         return self._server.get_job_info(self._job['name'])
 
     def __getitem__(self, key):
