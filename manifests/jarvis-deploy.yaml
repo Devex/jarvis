@@ -17,6 +17,13 @@ spec:
       - name: jarvis
         image: @@IMAGE@@
         imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "0.5"
+            memory: "500Mi"
+          limits:
+            cpu: "0.5"
+            memory: "500Mi"
         env:
         - name: JENKINS_USER
           value: bot@devex.com
