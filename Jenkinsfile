@@ -39,7 +39,7 @@ pipeline {
                         '''
                         sh '''
                             mkdir -p ~/.kube
-                            aws s3 cp s3://jenkins-docker-slave/services-kubeconfig.yaml ~/.kube/config
+                            aws s3 cp s3://devex-automated-settings/jenkins/services-kubeconfig.yaml ~/.kube/config
                         '''
                         sh '''
                             export PATH=$PATH:~/.local/bin
